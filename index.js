@@ -92,12 +92,40 @@ async function run() {
      res.send(users)
 
     });
+    app.get('/sellers/:category', async(req, res)=>{
+      const category = req.params.category;
+      // console.log(category)
+      const query = {category: category}
+     const users = await usersCollection.find(query).toArray();
+     res.send(users)
+
+    });
+    app.get('/buyers/:category', async(req, res)=>{
+      const category = req.params.category;
+      // console.log(category)
+      const query = {category: category}
+     const users = await usersCollection.find(query).toArray();
+     res.send(users)
+
+    });
 
     app.get('/users/admin/:email', async (req, res)=>{
       const email = req.params.email;
       const query = {email: email}
       const user = await usersCollection.findOne(query);
       res.send({isAdmin: user?.role === 'admin'})
+    })
+    app.get('/users/seller/:email', async (req, res)=>{
+      const email = req.params.email;
+      const query = {email: email}
+      const user = await usersCollection.findOne(query);
+      res.send({isSeller: user?.category === 'seller'})
+    })
+    app.get('/users/buyer/:email', async (req, res)=>{
+      const email = req.params.email;
+      const query = {email: email}
+      const user = await usersCollection.findOne(query);
+      res.send({isBuyer: user?.category === 'buyer'})
     })
 
     app.post("/users", async (req, res) => {
@@ -124,7 +152,14 @@ async function run() {
      const result = await usersCollection.updateOne(filter, updatedDoc, options)
      res.send(result)
 
-    })
+    });
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
   } finally {
   }
 }
