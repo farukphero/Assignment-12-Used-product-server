@@ -49,7 +49,6 @@ async function run() {
     });
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
-      // console.log(id)
       const query = { _id: ObjectId(id) };
       const products = await productsCollection.findOne(query);
       res.send(products);
@@ -66,9 +65,9 @@ async function run() {
       res.send(newProducts);
     });
 
-    app.post("/newproducts", async (req, res) => {
+    app.post("/products", async (req, res) => {
       const products = req.body;
-      const result = await newProductsCollection.insertOne(products);
+      const result = await productsCollection.insertOne(products);
       products.id = result.insertedId;
       res.send(result);
     });
