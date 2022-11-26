@@ -33,35 +33,32 @@ function verifyJWT(req, res, next) {
 
 async function run() {
   try {
-    const productsCollection = client
-      .db("usedProductResale")
-      .collection("products");
-    const newProductsCollection = client
-      .db("usedProductResale")
-      .collection("newproducts");
+    const categoryCollection = client.db("usedProductResale").collection("categories");
+    const productsCollection = client.db("usedProductResale").collection("products");
     const usersCollection = client.db("usedProductResale").collection("users");
+    const bookingsCollection = client.db("usedProductResale").collection("bookings");
 
-    app.get("/products", async (req, res) => {
+    app.get("/categories", async (req, res) => {
       const query = {};
-      const cursor = productsCollection.find(query);
-      const products = await cursor.toArray();
-      res.send(products);
+      const cursor = categoryCollection.find(query);
+      const categories = await cursor.toArray();
+      res.send(categories);
     });
-    app.get("/products/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const products = await productsCollection.findOne(query);
-      res.send(products);
+    app.get("/products/:category", async (req, res) => {
+      const category = req.params.category;
+      const query = {category: category};
+      const result =await productsCollection.find(query).toArray();
+      res.send(result);
     });
 
-    app.get("/newproducts", verifyJWT, async (req, res) => {
+    app.get("/products", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
       if ( email !== decodedEmail) {
         return res.status(403).send("Forbidden Access");
       }
       const query = { email: email };
-      const newProducts = await newProductsCollection.find(query).toArray();
+      const newProducts = await productsCollection.find(query).sort({ _id: -1 }).toArray();
       res.send(newProducts);
     });
 
@@ -93,7 +90,6 @@ async function run() {
     });
     app.get('/sellers/:category', async(req, res)=>{
       const category = req.params.category;
-      // console.log(category)
       const query = {category: category}
      const users = await usersCollection.find(query).toArray();
      res.send(users)
@@ -101,7 +97,6 @@ async function run() {
     });
     app.get('/buyers/:category', async(req, res)=>{
       const category = req.params.category;
-      // console.log(category)
       const query = {category: category}
      const users = await usersCollection.find(query).toArray();
      res.send(users)
@@ -151,6 +146,20 @@ async function run() {
      const result = await usersCollection.updateOne(filter, updatedDoc, options)
      res.send(result)
 
+    });
+
+    app.get("/bookings", async (req, res) => {
+      const query ={}
+      const result = await bookingsCollection.find(query).toArray();
+      // console.log(user, result)
+      res.send(result);
+    }); 
+
+    app.post("/bookings", async (req, res) => {
+      const user = req.body;
+      const result = await bookingsCollection.insertOne(user);
+      // console.log(user, result)
+      res.send(result);
     });
 
     app.delete("/users/:id", async (req, res) => {
