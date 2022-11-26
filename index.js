@@ -47,7 +47,7 @@ async function run() {
     app.get("/products/:category", async (req, res) => {
       const category = req.params.category;
       const query = {category: category};
-      const result =await productsCollection.find(query).toArray();
+      const result =await productsCollection.find(query).sort({ _id: -1 }).toArray();
       res.send(result);
     });
 
@@ -158,7 +158,6 @@ async function run() {
     app.post("/bookings", async (req, res) => {
       const user = req.body;
       const result = await bookingsCollection.insertOne(user);
-      // console.log(user, result)
       res.send(result);
     });
 
@@ -166,6 +165,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.deleteOne(query);
       res.send(result);
     });
   } finally {
