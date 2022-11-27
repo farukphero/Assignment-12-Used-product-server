@@ -40,6 +40,8 @@ async function run() {
     const usersCollection = client.db("usedProductResale").collection("users");
     const bookingsCollection = client.db("usedProductResale").collection("bookings");
     const paymentsCollection = client.db("usedProductResale").collection("payments");
+    
+    const reportedItemsCollection = client.db("usedProductResale").collection("reportedItems");
 
     app.get("/categories", async (req, res) => {
       const query = {};
@@ -208,16 +210,33 @@ async function run() {
       const payment = req.body;
       const result = await paymentsCollection.insertOne(payment)
       const id = payment.bookingId
+      
       const filter = {_id: ObjectId(id)}
+     
       const updatedDoc ={
         $set:{
           paid: true,
           transactionId: payment.transactionId
         }
       }
+     
       const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+
       res.send(result)
     })
+   
+    app.get("/reportedItems", async (req, res) => {
+      const query = {};
+      const cursor = reportedItemsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+   
+    app.post("/reportedItems", async (req, res) => {
+      const user =req.body ;
+      const result = await  reportedItemsCollection.insertOne(user);
+      res.send(result);
+    });
 
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
@@ -229,6 +248,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await productsCollection.deleteOne(query);
+      res.send(result);
+    });
+    app.delete("/reportedItems/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await reportedItemsCollection.deleteOne(query);
       res.send(result);
     });
   } finally {
