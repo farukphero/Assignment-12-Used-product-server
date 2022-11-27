@@ -147,16 +147,38 @@ async function run() {
      res.send(result)
 
     });
+    app.get('/bookings', async(req, res)=>{
+      let query = {};
+      if (req.query.email) {
+        query = {
+          email: req.query.email,
+        };
+      }
+      const result = await bookingsCollection.find(query).toArray()
+      res.send(result)
+    });
 
-    app.get("/bookings", async (req, res) => {
-      const query ={}
-      const result = await bookingsCollection.find(query).toArray();
-      // console.log(user, result)
-      res.send(result);
-    }); 
+    app.get('/bookings/:id', async(req, res)=>{
+      const id= req.params.id;
+      const query = {_id : ObjectId(id)}
+      const result = await bookingsCollection.findOne(query)
+      res.send(result)
+
+    })
 
     app.post("/bookings", async (req, res) => {
       const user = req.body;
+      const query = {
+         header : user.header,
+         email: user.email
+      }
+       const alreadyBooked = await bookingsCollection.find(query).toArray();
+       if(alreadyBooked.length){
+        const message = `You already have a booking on ${user.header}`
+        return res.send({acknowledged: false, message})
+      }
+
+       
       const result = await bookingsCollection.insertOne(user);
       res.send(result);
     });
