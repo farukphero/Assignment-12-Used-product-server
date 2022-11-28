@@ -245,11 +245,10 @@ async function run() {
         }
       }
       const adsProduct = await advertiseCollection.deleteOne(adsQuery);
-      const delProduct = await productsCollection.deleteOne(query);
       const updateProduct = await productsCollection.updateOne(query, updateDoc, option)
       const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc, option)
 
-      res.send(result, updateProduct, updatedResult,delProduct,adsProduct)
+      res.send(result, updateProduct, updatedResult,adsProduct)
     });
 
     app.get('/advertises', async(req, res)=>{
