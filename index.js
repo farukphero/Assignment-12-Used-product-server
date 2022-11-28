@@ -252,12 +252,12 @@ async function run() {
       res.send(result, updateProduct, updatedResult,delProduct,adsProduct)
     });
 
-    app.get('/advertises',verifyJWT, async(req, res)=>{
+    app.get('/advertises', async(req, res)=>{
       const query ={};
       const result = await advertiseCollection.find(query).toArray();
       res.send(result)
     })
-    app.post("/advertises",verifyJWT, async (req, res) => {
+    app.post("/advertises", async (req, res) => {
       const query =  req.body;
       const result = await  advertiseCollection.insertOne(query);
       res.send(result);
