@@ -40,7 +40,7 @@ async function run() {
     const usersCollection = client.db("usedProductResale").collection("users");
     const bookingsCollection = client.db("usedProductResale").collection("bookings");
     const paymentsCollection = client.db("usedProductResale").collection("payments");
-    
+    const advertiseCollection = client.db("usedProductResale").collection("advertises");
     const reportedItemsCollection = client.db("usedProductResale").collection("reportedItems");
 
     app.get("/categories", async (req, res) => {
@@ -159,7 +159,7 @@ async function run() {
           email: req.query.email,
         };
       }
-      const result = await bookingsCollection.find(query).toArray()
+      const result = await bookingsCollection.find(query).sort({ _id: -1 }).toArray()
       res.send(result)
     });
 
@@ -177,7 +177,7 @@ async function run() {
          header : user.header,
          email: user.email
       }
-       const alreadyBooked = await bookingsCollection.find(query).toArray();
+       const alreadyBooked = await bookingsCollection.find(query).sort({ _id: -1 }).toArray();
        if(alreadyBooked.length){
         const message = `You already have a booking on ${user.header}`
         return res.send({acknowledged: false, message})
@@ -208,30 +208,56 @@ async function run() {
 
     app.post('/payments', async(req, res)=>{
       const payment = req.body;
+      console.log(payment)
       const result = await paymentsCollection.insertOne(payment)
       const id = payment.bookingId
-      
+      const productId = payment.identifier
+      const adsQuery = {adsProductId:productId};
       const filter = {_id: ObjectId(id)}
-     
+      const query = {_id: ObjectId(productId)}
+      const option ={ upsert : true}
       const updatedDoc ={
         $set:{
           paid: true,
           transactionId: payment.transactionId
         }
       }
-     
-      const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+      const updateDoc ={
+        $set:{
+           paid: true,
+         
+        }
+      }
+      const adsProduct = await advertiseCollection.deleteOne(adsQuery);
+      const delProduct = await productsCollection.deleteOne(query);
+      const updateProduct = await productsCollection.updateOne(query, updateDoc, option)
+      const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc, option)
 
+      res.send(result, updateProduct, updatedResult,delProduct,adsProduct)
+    });
+
+    app.get('/advertises', async(req, res)=>{
+      const query ={};
+      const result = await advertiseCollection.find(query).toArray();
       res.send(result)
     })
-   
+    app.post("/advertises", async (req, res) => {
+      const query =  req.body;
+      const result = await  advertiseCollection.insertOne(query);
+      res.send(result);
+    });
     app.get("/reportedItems", async (req, res) => {
       const query = {};
       const cursor = reportedItemsCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
-   
+    // app.get('/', async(req, res)=>{
+    //   const query = {}
+    //   const users = await reportedItemsCollection.find(query).toArray()
+    //   res.send(users)
+ 
+    //  });
     app.post("/reportedItems", async (req, res) => {
       const user =req.body ;
       const result = await  reportedItemsCollection.insertOne(user);
