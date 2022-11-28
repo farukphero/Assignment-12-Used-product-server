@@ -132,6 +132,22 @@ async function run() {
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
+    
+    app.put("/verifySeller/:email", async (req, res) => {
+      const verified = req.body;
+      const email = verified.email;
+      const filter = {email}
+      const options = {upsert : true};
+      console.log(verified, email, filter)
+      const updatedDoc = {
+       $set:{
+           status: true,
+       }
+      }
+      const result = await usersCollection.updateOne(filter, updatedDoc, options)
+      const updated = await productsCollection.updateOne(filter, updatedDoc, options)
+      res.send(result,updated)
+    });
 
     app.put('/users/admin/:id', verifyJWT, async (req, res)=>{
       const decodedEmail = req.decoded.email;
@@ -246,18 +262,13 @@ async function run() {
       const result = await  advertiseCollection.insertOne(query);
       res.send(result);
     });
-    app.get("/reportedItems", async (req, res) => {
+    app.get("/reportedItems",verifyJWT, async (req, res) => {
       const query = {};
       const cursor = reportedItemsCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
-    // app.get('/', async(req, res)=>{
-    //   const query = {}
-    //   const users = await reportedItemsCollection.find(query).toArray()
-    //   res.send(users)
- 
-    //  });
+    
     app.post("/reportedItems", async (req, res) => {
       const user =req.body ;
       const result = await  reportedItemsCollection.insertOne(user);
