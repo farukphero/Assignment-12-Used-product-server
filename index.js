@@ -100,7 +100,7 @@ async function run() {
      res.send(users)
 
     });
-    app.get('/buyers/:category',verifyJWT, async(req, res)=>{
+    app.get('/buyers/:category', async(req, res)=>{
       const category = req.params.category;
       const query = {category: category}
      const users = await usersCollection.find(query).toArray();
@@ -168,7 +168,7 @@ async function run() {
      res.send(result)
 
     });
-    app.get('/bookings',verifyJWT, async(req, res)=>{
+    app.get('/bookings', async(req, res)=>{
       let query = {};
       if (req.query.email) {
         query = {
@@ -187,7 +187,7 @@ async function run() {
 
     })
 
-    app.post("/bookings",verifyJWT, async (req, res) => {
+    app.post("/bookings", async (req, res) => {
       const user = req.body;
       const query = {
          header : user.header,
@@ -275,7 +275,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/users/:id",verifyJWT, async (req, res) => {
+    app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await usersCollection.deleteOne(query);
