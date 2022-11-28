@@ -100,7 +100,7 @@ async function run() {
      res.send(users)
 
     });
-    app.get('/buyers/:category', async(req, res)=>{
+    app.get('/buyers/:category',verifyJWT, async(req, res)=>{
       const category = req.params.category;
       const query = {category: category}
      const users = await usersCollection.find(query).toArray();
@@ -168,7 +168,7 @@ async function run() {
      res.send(result)
 
     });
-    app.get('/bookings', async(req, res)=>{
+    app.get('/bookings',verifyJWT, async(req, res)=>{
       let query = {};
       if (req.query.email) {
         query = {
@@ -187,7 +187,7 @@ async function run() {
 
     })
 
-    app.post("/bookings", async (req, res) => {
+    app.post("/bookings",verifyJWT, async (req, res) => {
       const user = req.body;
       const query = {
          header : user.header,
@@ -252,17 +252,17 @@ async function run() {
       res.send(result, updateProduct, updatedResult,delProduct,adsProduct)
     });
 
-    app.get('/advertises', async(req, res)=>{
+    app.get('/advertises',verifyJWT, async(req, res)=>{
       const query ={};
       const result = await advertiseCollection.find(query).toArray();
       res.send(result)
     })
-    app.post("/advertises", async (req, res) => {
+    app.post("/advertises",verifyJWT, async (req, res) => {
       const query =  req.body;
       const result = await  advertiseCollection.insertOne(query);
       res.send(result);
     });
-    app.get("/reportedItems",verifyJWT, async (req, res) => {
+    app.get("/reportedItems", async (req, res) => {
       const query = {};
       const cursor = reportedItemsCollection.find(query);
       const result = await cursor.toArray();
@@ -275,7 +275,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/users/:id", async (req, res) => {
+    app.delete("/users/:id",verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await usersCollection.deleteOne(query);
@@ -284,8 +284,10 @@ async function run() {
     app.delete("/products/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
+      const filter = {_id: adsProductId };
       const result = await productsCollection.deleteOne(query);
-      res.send(result);
+      const adsResult = await advertiseCollection.deleteOne(filter);
+      res.send(result,adsResult);
     });
     app.delete("/reportedItems/:id", async (req, res) => {
       const id = req.params.id;
